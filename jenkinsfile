@@ -1,16 +1,12 @@
 pipeline {
-    agent {
-        docker {
-            image 'hashicorp/terraform:1.2.9'
-        }
-    }
+    agent any
 
     stages {
         stage('Clean Workspace') {
             steps {
                 deleteDir()
             }
-    }
+        }
 
         stage('Checkout Code') {
             steps {
@@ -21,7 +17,9 @@ pipeline {
         stage('Terraform Init') {
             steps {
                 dir('config_test2') {
-                    sh 'terraform init'
+                    docker.image('hashicorp/terraform:1.2.9').inside {
+                        sh 'terraform init'
+                    }
                 }
             }
         }
@@ -29,7 +27,9 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 dir('config_test2') {
-                    sh 'terraform plan -out=tfplan'
+                    docker.image('hashicorp/terraform:1.2.9').inside {
+                        sh 'terraform plan -out=tfplan'
+                    }
                 }
             }
         }
@@ -38,7 +38,9 @@ pipeline {
             steps {
                 dir('config_test2') {
                     input message: 'Approve Terraform Apply?', ok: 'Apply'
-                    sh 'terraform apply tfplan'
+                    docker.image('hashicorp/terraform:1.2.9').inside {
+                        sh 'terraform apply tfplan'
+                    }
                 }
             }
         }
