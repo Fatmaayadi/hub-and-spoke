@@ -25,9 +25,10 @@ https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/a
 RUN apt-get update && apt-get install -y docker-ce-cli
 
 # Install Terraform (latest stable)
-RUN wget https://releases.hashicorp.com/terraform/1.6.5/terraform_1.6.5_linux_amd64.zip -O /tmp/terraform.zip && \
-    unzip /tmp/terraform.zip -d /usr/local/bin && \
-    rm /tmp/terraform.zip
+RUN curl -fsSL https://releases.hashicorp.com/terraform/1.2.9/terraform_1.2.9_linux_amd64.zip -o terraform.zip \
+ && unzip terraform.zip \
+ && mv terraform /usr/local/bin/terraform \
+ && rm terraform.zip
 
 
 # Copy your private key file into the config_test2 directory inside the container
