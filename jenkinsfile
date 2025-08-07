@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        REGION = "eu-paris-1"
+        SERVICE_LABEL = "demo"
+        CIS_LEVEL = "1"
+    }
+
     stages {
         stage('Terraform Init') {
             steps {
@@ -13,7 +19,23 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 dir('config_test2') {
-                    sh 'terraform plan -out=tfplan'
+                    withCredentials([
+                        string(credentialsId: 'tenancy_ocid', variable: 'TENANCY_OCID'),
+                        string(credentialsId: 'user_ocid', variable: 'USER_OCID'),
+                        string(credentialsId: 'fingerprint', variable: 'FINGERPRINT'),
+                        string(credentialsId: 'private_key_path', variable: 'PRIVATE_KEY_PATH')
+                    ]) {
+                        sh '''
+                        terraform plan -out=tfplan \
+                          -var "tenancy_ocid=${TENANCY_OCID}" \
+                          -var "user_ocid=${USER_OCID}" \
+                          -var "fingerprint=${FINGERPRINT}" \
+                          -var "private_key_path=${PRIVATE_KEY_PATH}" \
+                          -var "region=${REGION}" \
+                          -var "service_label=${SERVICE_LABEL}" \
+                          -var "cis_level=${CIS_LEVEL}"
+                        '''
+                    }
                 }
             }
         }

@@ -17,8 +17,8 @@ service_label        = "demo"
 cis_level            = "1"
 #hub_subnet_id    = "ocid1.subnet.oc1.eu-paris-1.aaaaaaaash2hirrnijwz6b7ngelm43ngc3wvypzh6uwxio7ixf62lpljsgaa"
 #prod_subnet_id   = "ocid1.subnet.oc1.eu-paris-1.aaaaaaaaalu3k7tjfearr6edgwf5pyid2xcjgnyer3fydm6zo5bir3cfqbwq"
-image_ocid        = "ocid1.image.oc1.eu-paris-1.aaaaaaaa3s4duvet6op3v6aq6cn5wfwiiqpgeyi5ze45fx3qshnpkgd6wgdq"
-compartment_id   = "ocid1.compartment.oc1..aaaaaaaacrwdank2jret7vgqztb4rgwgasxqmt2fya4x2yodvtvt4nq5udma"
+#image_ocid        = "ocid1.image.oc1.eu-paris-1.aaaaaaaa3s4duvet6op3v6aq6cn5wfwiiqpgeyi5ze45fx3qshnpkgd6wgdq"
+#compartment_id   = "ocid1.compartment.oc1..aaaaaaaacrwdank2jret7vgqztb4rgwgasxqmt2fya4x2yodvtvt4nq5udma"
 #hub_subnet_cidr = "10.0.0.0/24"      # example CIDR for hub subnet
 #prod_subnet_cidr = "10.0.1.0/24"     # example CIDR for prod subnet
 # ------------------------------------------------------
