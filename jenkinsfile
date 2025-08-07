@@ -23,7 +23,9 @@ pipeline {
                         string(credentialsId: 'tenancy_ocid', variable: 'TENANCY_OCID'),
                         string(credentialsId: 'user_ocid', variable: 'USER_OCID'),
                         string(credentialsId: 'fingerprint', variable: 'FINGERPRINT'),
-                        string(credentialsId: 'private_key_path', variable: 'PRIVATE_KEY_PATH')
+                        string(credentialsId: 'private_key_path', variable: 'PRIVATE_KEY_PATH'),
+                        string(credentialsId: 'public_ssh_key', variable: 'PUBLIC_SSH_KEY')
+                       
                     ]) {
                         sh '''
                         terraform plan -out=tfplan \
@@ -33,7 +35,8 @@ pipeline {
                           -var "private_key_path=${PRIVATE_KEY_PATH}" \
                           -var "region=${REGION}" \
                           -var "service_label=${SERVICE_LABEL}" \
-                          -var "cis_level=${CIS_LEVEL}"
+                          -var "cis_level=${CIS_LEVEL}" \
+                          -var "public_ssh_key=${PUBLIC_SSH_KEY}"
                         '''
                     }
                 }
