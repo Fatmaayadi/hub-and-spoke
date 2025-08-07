@@ -48,23 +48,7 @@ variable "prod_subnet_id" {
   type        = string
 }
 
-variable "image_ocid" {
-  description = "OCID of the image to use"
-  type        = string
-}
 
-variable "compartment_id" {
-  description = "Compartment OCID"
-  type        = string
-}
-
-variable "hub_subnet_cidr" {
-  type = string
-}
-
-variable "prod_subnet_cidr" {
-  type = string
-}
 
 variable "hub_vcn_id" {
   type = string
