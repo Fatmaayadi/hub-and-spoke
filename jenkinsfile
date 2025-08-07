@@ -1,23 +1,33 @@
 pipeline {
-    agent {
-        docker {
-            image 'hashicorp/terraform:1.2.9'
-        }
+    agent any
+
+    environment {
+        TF_VERSION = 'Terraform_1.2.9'  
     }
+
     stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Fatmaayadi/hub-and-spoke.git'
+            }
+        }
+
         stage('Terraform Init') {
             steps {
                 sh 'terraform init'
             }
         }
+
         stage('Terraform Plan') {
             steps {
-                sh 'terraform plan'
+                sh 'terraform plan -out=tfplan'
             }
         }
+
         stage('Terraform Apply') {
             steps {
-                sh 'terraform apply -auto-approve'
+                input message: 'Do you want to apply this plan?'  // Manual confirmation
+                sh 'terraform apply tfplan'
             }
         }
     }

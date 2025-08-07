@@ -7,11 +7,11 @@ USER root
 # Update package lists and install any desired tools (e.g., Docker CLI, Git)
 # This example installs Docker CLI to enable Docker-in-Docker functionality
 RUN apt-get update && \
-    apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release && \
-    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
-    apt-get update && \
-    apt-get install -y docker-ce-cli
+    apt-get install -y wget unzip && \
+    wget https://releases.hashicorp.com/terraform/1.2.9/terraform_1.2.9_linux_amd64.zip && \
+    unzip terraform_1.2.9_linux_amd64.zip && \
+    mv terraform /usr/local/bin/ && \
+    rm terraform_1.2.9_linux_amd64.zip
 
 # Switch back to the jenkins user
 USER jenkins
