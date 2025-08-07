@@ -37,7 +37,8 @@ pipeline {
                               -var "region=${REGION}" \
                               -var "service_label=${SERVICE_LABEL}" \
                               -var "cis_level=${CIS_LEVEL}" \
-                              -var "public_ssh_key=${PUBLIC_SSH_KEY}"
+                              -var "public_ssh_key=${PUBLIC_SSH_KEY}" \
+                              -var "private_key_password=${PRIVATE_KEY_PASSWORD}"
                         '''
                     }
                 }
