@@ -28,11 +28,9 @@ pipeline {
                     ]) {
                         // Write private key content to file and run terraform plan using that file path
                         sh '''
-                            cat <<EOF > oci_api_key.pem
-$OCI_PRIVATE_KEY
-EOF
-
+                            echo -e "$OCI_PRIVATE_KEY" > oci_api_key.pem
                             chmod 600 oci_api_key.pem
+
                             
                             terraform plan -out=tfplan \
                               -var "tenancy_ocid=${TENANCY_OCID}" \
