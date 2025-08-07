@@ -1,24 +1,30 @@
-stage('Terraform Init') {
-    steps {
-        dir('config_test2') {
-            sh 'terraform init'
-        }
-    }
-}
+pipeline {
+    agent any
 
-stage('Terraform Plan') {
-    steps {
-        dir('config_test2') {
-            sh 'terraform plan -out=tfplan'
+    stages {
+        stage('Terraform Init') {
+            steps {
+                dir('config_test2') {
+                    sh 'terraform init'
+                }
+            }
         }
-    }
-}
 
-stage('Terraform Apply') {
-    steps {
-        dir('config_test2') {
-            input message: 'Approve Terraform Apply?', ok: 'Apply'
-            sh 'terraform apply tfplan'
+        stage('Terraform Plan') {
+            steps {
+                dir('config_test2') {
+                    sh 'terraform plan -out=tfplan'
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                dir('config_test2') {
+                    input message: 'Approve Terraform Apply?', ok: 'Apply'
+                    sh 'terraform apply tfplan'
+                }
+            }
         }
     }
 }
