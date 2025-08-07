@@ -27,7 +27,8 @@ pipeline {
                         string(credentialsId: 'public_ssh_key', variable: 'PUBLIC_SSH_KEY'),
                         string(credentialsId: 'private_key_password', variable: 'PRIVATE_KEY_PASSWORD') // can be empty
                     ]) {
-                        sh '''
+                        // Use triple-double quotes so Groovy interpolates the shell variables properly
+                        sh """
                             echo "===== PRIVATE KEY CONTENT START ====="
                             head -20 "$OCI_PRIVATE_KEY"
                             echo "===== PRIVATE KEY CONTENT END ====="
@@ -35,16 +36,16 @@ pipeline {
                             chmod 600 "$OCI_PRIVATE_KEY"
 
                             terraform plan -out=tfplan \
-                              -var "tenancy_ocid=${TENANCY_OCID}" \
-                              -var "user_ocid=${USER_OCID}" \
-                              -var "fingerprint=${FINGERPRINT}" \
-                              -var "private_key_path=${OCI_PRIVATE_KEY}" \
-                              -var "private_key_password=${PRIVATE_KEY_PASSWORD}" \
-                              -var "region=${REGION}" \
-                              -var "service_label=${SERVICE_LABEL}" \
-                              -var "cis_level=${CIS_LEVEL}" \
-                              -var "public_ssh_key=${PUBLIC_SSH_KEY}"
-                        '''
+                              -var "tenancy_ocid=$TENANCY_OCID" \
+                              -var "user_ocid=$USER_OCID" \
+                              -var "fingerprint=$FINGERPRINT" \
+                              -var "private_key_path=$OCI_PRIVATE_KEY" \
+                              -var "private_key_password=$PRIVATE_KEY_PASSWORD" \
+                              -var "region=$REGION" \
+                              -var "service_label=$SERVICE_LABEL" \
+                              -var "cis_level=$CIS_LEVEL" \
+                              -var "public_ssh_key=$PUBLIC_SSH_KEY"
+                        """
                     }
                 }
             }
