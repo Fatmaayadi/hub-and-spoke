@@ -17,8 +17,10 @@ pipeline {
         stage('Terraform Init') {
             steps {
                 dir('config_test2') {
-                    docker.image('hashicorp/terraform:1.2.9').inside {
-                        sh 'terraform init'
+                    script {
+                        docker.image('hashicorp/terraform:1.2.9').inside {
+                            sh 'terraform init'
+                        }
                     }
                 }
             }
@@ -27,8 +29,10 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 dir('config_test2') {
-                    docker.image('hashicorp/terraform:1.2.9').inside {
-                        sh 'terraform plan -out=tfplan'
+                    script {
+                        docker.image('hashicorp/terraform:1.2.9').inside {
+                            sh 'terraform plan -out=tfplan'
+                        }
                     }
                 }
             }
@@ -38,8 +42,10 @@ pipeline {
             steps {
                 dir('config_test2') {
                     input message: 'Approve Terraform Apply?', ok: 'Apply'
-                    docker.image('hashicorp/terraform:1.2.9').inside {
-                        sh 'terraform apply tfplan'
+                    script {
+                        docker.image('hashicorp/terraform:1.2.9').inside {
+                            sh 'terraform apply tfplan'
+                        }
                     }
                 }
             }
