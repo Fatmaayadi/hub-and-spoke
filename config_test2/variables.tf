@@ -41,22 +41,26 @@ variable "env_advanced_options" {
 variable "hub_subnet_id" {
   description = "OCID of the subnet in the hub VCN"
   type        = string
+  default = null
 }
 
 variable "prod_subnet_id" {
   description = "OCID of the subnet in the prod VCN"
   type        = string
+  default = null
 }
 
 
 
 variable "hub_vcn_id" {
   type = string
+  default = null
 }
 
 variable "prod_vcn_id" {
   type = string
-}
+  default = null
+  }
 
 variable "public_ssh_key" {
   description = "Add your public ssh key - for provisioning your compute instance"
@@ -757,26 +761,31 @@ variable "budget_alert_email_endpoints" {
 variable "custom_enclosing_compartment_name" {
   description = "Top-level compartment name"
   type        = string
+  default = null
 }
 
 variable "custom_network_compartment_name" {
   description = "Compartment name for network resources"
   type        = string
+  default = null
 }
 
 variable "custom_appdev_compartment_name" {
   description = "Compartment name for production"
   type        = string
+  default = null
 }
 
 variable "custom_database_compartment_name" {
   description = "Compartment name for test"
   type        = string
+  default = null
 }
 
 variable "custom_security_compartment_name" {
   description = "Compartment name for security"
   type        = string
+  default = null
 }
 variable "compartments_configuration" {
   description = "Configuration des compartments personnalisés"
