@@ -23,20 +23,17 @@ pipeline {
                         string(credentialsId: 'tenancy_ocid', variable: 'TENANCY_OCID'),
                         string(credentialsId: 'user_ocid', variable: 'USER_OCID'),
                         string(credentialsId: 'fingerprint', variable: 'FINGERPRINT'),
-                        string(credentialsId: 'oci_private_key', variable: 'OCI_PRIVATE_KEY'), // Add OCI private key secret here
+                        file(credentialsId: 'oci_private_key', variable: 'OCI_PRIVATE_KEY_PATH'),  // Note 'file' here
                         string(credentialsId: 'public_ssh_key', variable: 'PUBLIC_SSH_KEY')
                     ]) {
-                        // Write private key content to file and run terraform plan using that file path
                         sh '''
-                            echo -e "$OCI_PRIVATE_KEY" > oci_api_key.pem
-                            chmod 600 oci_api_key.pem
+                            chmod 600 $OCI_PRIVATE_KEY_PATH
 
-                            
                             terraform plan -out=tfplan \
                               -var "tenancy_ocid=${TENANCY_OCID}" \
                               -var "user_ocid=${USER_OCID}" \
                               -var "fingerprint=${FINGERPRINT}" \
-                              -var "private_key_path=oci_api_key.pem" \
+                              -var "private_key_path=${OCI_PRIVATE_KEY_PATH}" \
                               -var "region=${REGION}" \
                               -var "service_label=${SERVICE_LABEL}" \
                               -var "cis_level=${CIS_LEVEL}" \
