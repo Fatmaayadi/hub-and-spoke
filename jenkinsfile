@@ -1,8 +1,9 @@
 pipeline {
-    agent any
-
-    environment {
-        TF_VERSION = 'Terraform_1.2.9'  
+    agent {
+        docker {
+            image 'hashicorp/terraform:1.2.9'
+            args '-v $HOME/.aws:/root/.aws' // if you need AWS credentials mounted
+        }
     }
 
     stages {
@@ -14,20 +15,26 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                sh 'terraform init'
+                dir('config_test2') {
+                    sh 'terraform init'
+                }
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                sh 'terraform plan -out=tfplan'
+                dir('config_test2') {
+                    sh 'terraform plan -out=tfplan'
+                }
             }
         }
 
         stage('Terraform Apply') {
             steps {
-                input message: 'Do you want to apply this plan?'  // Manual confirmation
-                sh 'terraform apply tfplan'
+                dir('config_test2') {
+                    input message: 'Approve Terraform Apply?', ok: 'Apply'
+                    sh 'terraform apply tfplan'
+                }
             }
         }
     }
