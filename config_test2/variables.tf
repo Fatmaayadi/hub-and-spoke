@@ -572,7 +572,7 @@ variable "cloud_guard_admin_email_endpoints" {
   }
 }
 
-variable "tenancy_id" {}
+#variable "tenancy_id" {}
 
 # ------------------------------------------------------
 # ----- Security Zones
