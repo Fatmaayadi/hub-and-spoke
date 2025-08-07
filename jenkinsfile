@@ -23,20 +23,23 @@ pipeline {
                         string(credentialsId: 'tenancy_ocid', variable: 'TENANCY_OCID'),
                         string(credentialsId: 'user_ocid', variable: 'USER_OCID'),
                         string(credentialsId: 'fingerprint', variable: 'FINGERPRINT'),
-                        string(credentialsId: 'private_key_path', variable: 'PRIVATE_KEY_PATH'),
+                        string(credentialsId: 'oci_private_key', variable: 'OCI_PRIVATE_KEY'), // Add OCI private key secret here
                         string(credentialsId: 'public_ssh_key', variable: 'PUBLIC_SSH_KEY')
-                       
                     ]) {
+                        // Write private key content to file and run terraform plan using that file path
                         sh '''
-                        terraform plan -out=tfplan \
-                          -var "tenancy_ocid=${TENANCY_OCID}" \
-                          -var "user_ocid=${USER_OCID}" \
-                          -var "fingerprint=${FINGERPRINT}" \
-                          -var "private_key_path=${PRIVATE_KEY_PATH}" \
-                          -var "region=${REGION}" \
-                          -var "service_label=${SERVICE_LABEL}" \
-                          -var "cis_level=${CIS_LEVEL}" \
-                          -var "public_ssh_key=${PUBLIC_SSH_KEY}"
+                            echo "$OCI_PRIVATE_KEY" > oci_api_key.pem
+                            chmod 600 oci_api_key.pem
+                            
+                            terraform plan -out=tfplan \
+                              -var "tenancy_ocid=${TENANCY_OCID}" \
+                              -var "user_ocid=${USER_OCID}" \
+                              -var "fingerprint=${FINGERPRINT}" \
+                              -var "private_key_path=oci_api_key.pem" \
+                              -var "region=${REGION}" \
+                              -var "service_label=${SERVICE_LABEL}" \
+                              -var "cis_level=${CIS_LEVEL}" \
+                              -var "public_ssh_key=${PUBLIC_SSH_KEY}"
                         '''
                     }
                 }
