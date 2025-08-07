@@ -1,6 +1,48 @@
-stage('Debug Workspace') {
-    steps {
-        sh 'ls -la'
-        sh 'if [ -d .git ]; then echo ".git directory exists"; else echo ".git missing"; fi'
+pipeline {
+    agent any
+
+    stages {
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Fatmaayadi/hub-and-spoke.git'
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                dir('config_test2') {
+                    docker.image('hashicorp/terraform:1.2.9').inside {
+                        sh 'terraform init'
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                dir('config_test2') {
+                    docker.image('hashicorp/terraform:1.2.9').inside {
+                        sh 'terraform plan -out=tfplan'
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                dir('config_test2') {
+                    input message: 'Approve Terraform Apply?', ok: 'Apply'
+                    docker.image('hashicorp/terraform:1.2.9').inside {
+                        sh 'terraform apply tfplan'
+                    }
+                }
+            }
+        }
     }
 }
