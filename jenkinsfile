@@ -23,11 +23,15 @@ pipeline {
                         string(credentialsId: 'tenancy_ocid', variable: 'TENANCY_OCID'),
                         string(credentialsId: 'user_ocid', variable: 'USER_OCID'),
                         string(credentialsId: 'fingerprint', variable: 'FINGERPRINT'),
-                        file(credentialsId: 'oci_private_key', variable: 'OCI_PRIVATE_KEY_PATH'),  // Note 'file' here
-                        string(credentialsId: 'public_ssh_key', variable: 'PUBLIC_SSH_KEY')
+                        file(credentialsId: 'oci_private_key', variable: 'OCI_PRIVATE_KEY_PATH'),  // file credential
+                        string(credentialsId: 'public_ssh_key', variable: 'PUBLIC_SSH_KEY'),
+                        string(credentialsId: 'private_key_password', variable: 'PRIVATE_KEY_PASSWORD') // even if empty
                     ]) {
                         sh '''
-                            chmod 600 $OCI_PRIVATE_KEY_PATH
+                            chmod 666 "$OCI_PRIVATE_KEY_PATH"
+                            echo "===== PRIVATE KEY CONTENT START ====="
+                            cat "$OCI_PRIVATE_KEY_PATH"
+                            echo "===== PRIVATE KEY CONTENT END ====="
 
                             terraform plan -out=tfplan \
                               -var "tenancy_ocid=${TENANCY_OCID}" \
