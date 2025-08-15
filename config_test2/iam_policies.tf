@@ -742,7 +742,7 @@ resource "oci_identity_policy" "cloud_guard_policy" {
 }
 resource "null_resource" "wait_on_services_policy" {
   provisioner "local-exec" {
-    command = "powershell -Command \"Start-Sleep -Seconds 20\""
+    command = "sleep 20"
   }
 
   depends_on = [oci_identity_policy.cloud_guard_policy]
