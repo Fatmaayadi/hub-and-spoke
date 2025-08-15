@@ -12,7 +12,8 @@ pipeline {
                 script {
                     echo "Creating workspace .oci folder if not exists"
                     sh '''
-                        mkdir -p "$WORKSPACE/.oci"
+                         mkdir -p /home/jenkins/agent/workspace/terraform-deploy/.oci
+                        chmod 700 /home/jenkins/agent/workspace/terraform-deploy/.oci
                     '''
                 }
             }
