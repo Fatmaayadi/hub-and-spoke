@@ -35,14 +35,26 @@ pipeline {
             }
         }
 
-        stage('Terraform Init & Apply') {
+        stage('Terraform Init') {
             steps {
                 dir('config_test2') {
-                    sh '''
-                        terraform init
-                        terraform plan -var-file="terraform.auto.tfvars"
-                        terraform apply -var-file="terraform.auto.tfvars" -auto-approve
-                    '''
+                    sh 'terraform init'
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                dir('config_test2') {
+                    sh 'terraform plan -var-file="terraform.auto.tfvars"'
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                dir('config_test2') {
+                    sh 'terraform apply -var-file="terraform.auto.tfvars" -auto-approve'
                 }
             }
         }
