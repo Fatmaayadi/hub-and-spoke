@@ -1,38 +1,46 @@
 pipeline {
     agent { label 'oci-agent' }
 
+    environment {
+        // Path to your public SSH key on the Jenkins agent
+        PUBLIC_SSH_KEY = "C:\\Users\\DELL\\Downloads\\ayadifatma418@gmail.com-2025-07-10T13_34_58.521Z.pub"
+    }
+
     stages {
         stage('Setup OCI Config') {
-    steps {
-        withCredentials([
-            file(credentialsId: 'oci-config', variable: 'OCI_CONFIG'),
-            file(credentialsId: 'oci-key', variable: 'OCI_KEY')
-        ]) {
-            bat """
-                REM Create .oci folder in workspace
-                if not exist "%WORKSPACE%\\.oci" mkdir "%WORKSPACE%\\.oci"
+            steps {
+                withCredentials([
+                    file(credentialsId: 'oci-config', variable: 'OCI_CONFIG'),
+                    file(credentialsId: 'oci-key', variable: 'OCI_KEY')
+                ]) {
+                    bat """
+                        REM Create .oci folder in workspace
+                        if not exist "%WORKSPACE%\\.oci" mkdir "%WORKSPACE%\\.oci"
 
-                REM Copy OCI config and private key into workspace
-                copy /Y "%OCI_CONFIG%" "%WORKSPACE%\\.oci\\config"
-                copy /Y "%OCI_KEY%" "%WORKSPACE%\\.oci\\oci_api_key.pem"
-            """
+                        REM Copy OCI config and private key into workspace
+                        copy /Y "%OCI_CONFIG%" "%WORKSPACE%\\.oci\\config"
+                        copy /Y "%OCI_KEY%" "%WORKSPACE%\\.oci\\oci_api_key.pem"
+                    """
+                }
+            }
         }
-    }
-}
 
-
-
-
-        stage('Terraform Apply') {
+        stage('Terraform Init & Apply') {
             steps {
                 dir('config_test2') {
                     bat """
-                        REM Read public key from local file
-                        set /p PUB_KEY=<"C:\\Users\\DELL\\Downloads\\ayadifatma418@gmail.com-2025-07-10T13_34_58.521Z.pub"
+                        REM Set environment variable for Terraform to find OCI config
+                        set OCI_CONFIG_FILE=%WORKSPACE%\\.oci\\config
+                        set OCI_KEY_FILE=%WORKSPACE%\\.oci\\oci_api_key.pem
 
+                        REM Initialize Terraform
                         terraform init
-                        terraform plan -out=tfplan -var "public_ssh_key=%PUB_KEY%"
-                        terraform apply -auto-approve -var "public_ssh_key=%PUB_KEY%"
+
+                        REM Run Terraform plan with public SSH key variable
+                        terraform plan -var "public_ssh_key=$(type ${PUBLIC_SSH_KEY})" -out=tfplan
+
+                        REM Apply Terraform
+                        terraform apply -auto-approve tfplan
                     """
                 }
             }
