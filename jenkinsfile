@@ -9,21 +9,27 @@ pipeline {
                     file(credentialsId: 'oci-key', variable: 'OCI_KEY')
                 ]) {
                     bat """
-                        if not exist "%USERPROFILE%\\.oci" mkdir "%USERPROFILE%\\.oci"
-                        copy "%OCI_CONFIG%" "%USERPROFILE%\\.oci\\config"
-                        copy "%OCI_KEY%" "%USERPROFILE%\\.oci\\oci_api_key.pem"
-                        powershell -Command "icacls '%USERPROFILE%\\.oci\\oci_api_key.pem' /inheritance:r /grant:r '%USERNAME%:F'"
+                    REM Create .oci folder if it doesn't exist
+                    if not exist "%USERPROFILE%\\.oci" mkdir "%USERPROFILE%\\.oci"
+
+                    REM Copy config and key from Jenkins credentials
+                    copy /Y "%OCI_CONFIG%" "%USERPROFILE%\\.oci\\config"
+                    copy /Y "%OCI_KEY%" "%USERPROFILE%\\.oci\\oci_api_key.pem"
+
+                    REM Set permissions on the private key
+                    icacls "%USERPROFILE%\\.oci\\oci_api_key.pem" /inheritance:r /grant:r "%USERNAME%:F"
                     """
                 }
             }
         }
+
         stage('Terraform Apply') {
             steps {
-                dir('config_test2') {
+                dir('config_test2') { // your Terraform folder
                     bat """
-                        terraform init
-                        terraform plan -out=tfplan
-                        terraform apply -auto-approve
+                    terraform init
+                    terraform plan -out=tfplan
+                    terraform apply -auto-approve
                     """
                 }
             }
