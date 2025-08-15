@@ -20,16 +20,22 @@ pipeline {
         }
 
         stage('Copy OCI Config and Key') {
-            steps {
-                withCredentials([file(credentialsId: 'oci_config', variable: 'OCI_CONFIG_FILE'),
-                                 file(credentialsId: 'oci_key', variable: 'OCI_KEY_FILE')]) {
-                    sh '''
-                        cp "$OCI_CONFIG_FILE" "$WORKSPACE/.oci/config"
-                        cp "$OCI_KEY_FILE" "$WORKSPACE/.oci/oci_api_key.pem"
-                    '''
-                }
-            }
+    steps {
+        withCredentials([
+            file(credentialsId: 'oci_config', variable: 'OCI_CONFIG_FILE'),
+            file(credentialsId: 'oci_key', variable: 'OCI_KEY_FILE')
+        ]) {
+            sh '''
+                mkdir -p "$WORKSPACE/terraform-deploy/.oci"
+                cp "$OCI_CONFIG_FILE" "$WORKSPACE/terraform-deploy/.oci/config"
+                cp "$OCI_KEY_FILE" "$WORKSPACE/terraform-deploy/.oci/oci_api_key.pem"
+                chmod 600 "$WORKSPACE/terraform-deploy/.oci/config"
+                chmod 600 "$WORKSPACE/terraform-deploy/.oci/oci_api_key.pem"
+            '''
         }
+    }
+}
+
 
         stage('Terraform Init & Apply') {
             steps {
