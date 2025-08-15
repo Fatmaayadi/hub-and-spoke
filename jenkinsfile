@@ -22,6 +22,7 @@ pipeline {
 
 
 
+
         stage('Terraform Apply') {
             steps {
                 dir('config_test2') {
