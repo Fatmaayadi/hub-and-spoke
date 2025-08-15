@@ -58,5 +58,10 @@ pipeline {
                 }
             }
         }
+        stage('Approve Destroy') {
+            steps {
+                input message: 'Do you want to destroy all OCI resources?', ok: 'Yes, destroy'
+            }
+        }
     }
 }
