@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins-master
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    restart: unless-stopped
+
+  agent-oci:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jenkins-agent-oci
+    environment:
+      - JENKINS_URL=http://jenkins:8080
+      - JENKINS_AGENT_NAME=oci-agent
+      - JENKINS_SECRET=73e2824d6e385f47f9eb86a935715270efe0413f67ba1575ccbe4a78180d2a6e  # We'll get this from Jenkins UI
+      - JENKINS_AGENT_WORKDIR=/home/jenkins/agent
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - oci_config:/home/jenkins/.oci
+    restart: unless-stopped
+    depends_on:
+      - jenkins
+
+volumes:
+  jenkins_home:
+  oci_config:

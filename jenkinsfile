@@ -1,60 +1,29 @@
 pipeline {
-    agent any
-
-    environment {
-        REGION = "eu-paris-1"
-        SERVICE_LABEL = "demo"
-        CIS_LEVEL = "1"
-    }
+    agent { label 'oci-agent' }
 
     stages {
-        stage('Terraform Init') {
+        stage('Setup OCI Config') {
             steps {
-                dir('config_test2') {
-                    sh 'terraform init'
+                withCredentials([
+                    file(credentialsId: 'oci-config', variable: 'OCI_CONFIG'),
+                    file(credentialsId: 'oci-key', variable: 'OCI_KEY')
+                ]) {
+                    sh '''
+                        mkdir -p ~/.oci
+                        cp $OCI_CONFIG ~/.oci/config
+                        cp $OCI_KEY ~/.oci/oci_api_key.pem
+                        chmod 600 ~/.oci/oci_api_key.pem
+                    '''
                 }
             }
         }
-
-        stage('Terraform Plan') {
-            steps {
-                dir('config_test2') {
-                    withCredentials([
-                        file(credentialsId: 'oci_private_key', variable: 'OCI_PRIVATE_KEY'),
-                        string(credentialsId: 'tenancy_ocid', variable: 'TENANCY_OCID'),
-                        string(credentialsId: 'user_ocid', variable: 'USER_OCID'),
-                        string(credentialsId: 'fingerprint', variable: 'FINGERPRINT'),
-                        string(credentialsId: 'public_ssh_key', variable: 'PUBLIC_SSH_KEY'),
-                        string(credentialsId: 'private_key_password', variable: 'PRIVATE_KEY_PASSWORD')
-                    ]) {
-                        sh '''
-                            echo "===== PRIVATE KEY CONTENT START ====="
-                            head -20 "$OCI_PRIVATE_KEY"
-                            echo "===== PRIVATE KEY CONTENT END ====="
-
-                            chmod 600 "$OCI_PRIVATE_KEY"
-
-                            terraform plan -out=tfplan \
-                              -var "tenancy_ocid=${TENANCY_OCID}" \
-                              -var "user_ocid=${USER_OCID}" \
-                              -var "fingerprint=${FINGERPRINT}" \
-                              -var "private_key_path=${OCI_PRIVATE_KEY}" \
-                              -var "private_key_password=${PRIVATE_KEY_PASSWORD}" \
-                              -var "region=${REGION}" \
-                              -var "service_label=${SERVICE_LABEL}" \
-                              -var "cis_level=${CIS_LEVEL}" \
-                              -var "public_ssh_key=${PUBLIC_SSH_KEY}"
-                        '''
-                    }
-                }
-            }
-        }
-
         stage('Terraform Apply') {
             steps {
                 dir('config_test2') {
-                    input message: 'Approve Terraform Apply?', ok: 'Apply'
-                    sh 'terraform apply tfplan'
+                    sh '''
+                        terraform init
+                        terraform apply -auto-approve
+                    '''
                 }
             }
         }

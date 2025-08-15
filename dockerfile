@@ -1,26 +1,31 @@
-FROM jenkins/jenkins:lts
+FROM jenkins/agent:latest-jdk17
 
 USER root
 
-# Install Docker CLI dependencies
+# Install dependencies
 RUN apt-get update && apt-get install -y \
-    apt-transport-https \
-    ca-certificates \
     curl \
-    gnupg \
-    lsb-release
+    unzip \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
 
-# Add Docker official GPG key
-RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+# Install OCI CLI
+RUN pip3 install --break-system-packages oci-cli
 
-# Add Docker repo to apt sources
-RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
-https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-# Install Docker CLI only (not the daemon)
-RUN apt-get update && apt-get install -y docker-ce-cli
+# Install Terraform
+ARG TERRAFORM_VERSION=1.9.5
+RUN curl -fsSL https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -o terraform.zip \
+    && unzip terraform.zip \
+    && mv terraform /usr/local/bin/ \
+    && rm terraform.zip
 
-# Clean up apt cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Prepare OCI config folder
+RUN mkdir -p /home/jenkins/.oci && chown -R jenkins:jenkins /home/jenkins
 
 USER jenkins
+
+WORKDIR /home/jenkins
+
+#ENTRYPOINT ["/usr/local/bin/jenkins-agent"]
