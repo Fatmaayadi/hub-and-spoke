@@ -8,23 +8,24 @@ pipeline {
                     file(credentialsId: 'oci-config', variable: 'OCI_CONFIG'),
                     file(credentialsId: 'oci-key', variable: 'OCI_KEY')
                 ]) {
-                    sh '''
-                        mkdir -p ~/.oci
-                        cp $OCI_CONFIG ~/.oci/config
-                        cp $OCI_KEY ~/.oci/oci_api_key.pem
-                        chmod 600 ~/.oci/oci_api_key.pem
-                    '''
+                    bat """
+                        if not exist "%USERPROFILE%\\.oci" mkdir "%USERPROFILE%\\.oci"
+                        copy "%OCI_CONFIG%" "%USERPROFILE%\\.oci\\config"
+                        copy "%OCI_KEY%" "%USERPROFILE%\\.oci\\oci_api_key.pem"
+                        powershell -Command "icacls '%USERPROFILE%\\.oci\\oci_api_key.pem' /inheritance:r /grant:r '%USERNAME%:F'"
+                    """
                 }
             }
         }
+
         stage('Terraform Apply') {
             steps {
                 dir('config_test2') {
-                    sh '''
+                    bat """
                         terraform init
                         terraform plan -out=tfplan
                         terraform apply -auto-approve
-                    '''
+                    """
                 }
             }
         }
