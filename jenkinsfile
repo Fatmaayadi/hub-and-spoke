@@ -1,48 +1,40 @@
 pipeline {
-    agent { label 'oci-agent' }
+    agent any
 
     environment {
-        PUBLIC_SSH_KEY = "C:\\Users\\DELL\\Downloads\\ayadifatma418@gmail.com-2025-07-10T13_34_58.521Z.pub"
+        OCI_CONFIG = '/home/jenkins/.oci/config'
+        OCI_KEY = '/home/jenkins/.oci/oci_api_key.pem'
     }
 
     stages {
-
-        stage('Setup OCI Config') {
-    steps {
-        withCredentials([
-            file(credentialsId: 'oci-config', variable: 'OCI_CONFIG'),
-            file(credentialsId: 'oci-key', variable: 'OCI_KEY')
-        ]) {
-            bat '''
-                REM Create workspace .oci folder
-                if not exist "%WORKSPACE%\\.oci" mkdir "%WORKSPACE%\\.oci"
-
-                REM Copy OCI config and private key into workspace
-                copy /Y "%OCI_CONFIG%" "%WORKSPACE%\\.oci\\config"
-                copy /Y "%OCI_KEY%" "%WORKSPACE%\\.oci\\oci_api_key.pem"
-
-                REM Set permissions on private key
-                icacls "%WORKSPACE%\\.oci\\oci_api_key.pem" /inheritance:r /grant:r "%USERNAME%:F"
-            '''
-        }
-    }
-}
-
-
-        stage('Terraform Apply') {
+        stage('Prepare Workspace') {
             steps {
-                dir('config_test2') {
-                    bat '''
-                        REM Initialize Terraform
-                        terraform init
+                script {
+                    echo "Creating workspace .oci folder if not exists"
+                    bat """
+                        if not exist "%WORKSPACE%\\.oci" mkdir "%WORKSPACE%\\.oci"
+                    """
+                }
+            }
+        }
 
-                        REM Run Terraform plan with public SSH key
-                        set /p PUBLIC_KEY=<"${PUBLIC_SSH_KEY}"
-                        terraform plan -var "public_ssh_key=%PUBLIC_KEY%" -out=tfplan
+        stage('Copy OCI Config and Key') {
+            steps {
+                withCredentials([file(credentialsId: 'oci_config', variable: 'OCI_CONFIG_FILE'),
+                                 file(credentialsId: 'oci_key', variable: 'OCI_KEY_FILE')]) {
+                    bat """
+                        copy /Y "%OCI_CONFIG_FILE%" "%WORKSPACE%\\.oci\\config"
+                        copy /Y "%OCI_KEY_FILE%" "%WORKSPACE%\\.oci\\oci_api_key.pem"
+                    """
+                }
+            }
+        }
 
-                        REM Apply Terraform
-                        terraform apply -auto-approve tfplan
-                    '''
+        stage('Terraform Init & Apply') {
+            steps {
+                dir('terraform-deploy') {
+                    bat 'terraform init'
+                    bat 'terraform apply -auto-approve'
                 }
             }
         }

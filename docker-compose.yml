@@ -8,7 +8,8 @@ services:
       - "8080:8080"
       - "50000:50000"
     volumes:
-      - jenkins_home:/var/jenkins_home
+      - /c/Users/DELL/.oci:/home/jenkins/.oci:ro
+      - /c/Users/DELL/OneDrive/Bureau/oci-cis-landingzone-quickstart/agent.jar:/home/jenkins/agent/agent.jar:ro
     restart: unless-stopped
 
   agent-oci:
@@ -19,15 +20,11 @@ services:
     environment:
       - JENKINS_URL=http://jenkins:8080
       - JENKINS_AGENT_NAME=oci-agent
-      - JENKINS_SECRET=73e2824d6e385f47f9eb86a935715270efe0413f67ba1575ccbe4a78180d2a6e  # We'll get this from Jenkins UI
+      - JENKINS_SECRET=0e7aa5617b92f576ad59da70dcb3afccb5529653bb2c03fcdf0cfbc3df48e68f
       - JENKINS_AGENT_WORKDIR=/home/jenkins/agent
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      - oci_config:/home/jenkins/.oci
     restart: unless-stopped
     depends_on:
       - jenkins
 
 volumes:
   jenkins_home:
-  oci_config:
