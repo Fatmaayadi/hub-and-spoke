@@ -15,6 +15,8 @@ private_key_password = ""
 region               = "eu-paris-1"
 service_label        = "demo"
 cis_level            = "1"
+public_ssh_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQChbzgKOuiygYdPeG010prCQ2J0uVfa22aFWgbnZgJDFWAApIffvtZ0kow2VbEF3RJ2bW/BZ2jgbJKhDKRTQObMVV2w11FfkuM6goRl5qoSZ/oTnl+KgnV9v7oisdttnIY6Ah9niqvemES5zCzaNyEh4pZJfZt3ZEfgilE/s/7g6Ggz51mZzRFPEd815hrOftsxLT69UUIzoBPT+R3e27lJDlcjX8LhxdmineMNR1xliCPprOA21s6lJahnEHyi+fh9ozUX4b9KiQbk7lge4pP/4FwGizKek+em5Wda0HjomHhY+dNkPohWIYhFxKehr8e4BXTkwD7JRiZ1WV6axf7Z"
+
 #hub_subnet_id    = "ocid1.subnet.oc1.eu-paris-1.aaaaaaaash2hirrnijwz6b7ngelm43ngc3wvypzh6uwxio7ixf62lpljsgaa"
 #prod_subnet_id   = "ocid1.subnet.oc1.eu-paris-1.aaaaaaaaalu3k7tjfearr6edgwf5pyid2xcjgnyer3fydm6zo5bir3cfqbwq"
 #image_ocid        = "ocid1.image.oc1.eu-paris-1.aaaaaaaa3s4duvet6op3v6aq6cn5wfwiiqpgeyi5ze45fx3qshnpkgd6wgdq"

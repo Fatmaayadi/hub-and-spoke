@@ -42,8 +42,8 @@ pipeline {
                 dir('config_test2') {
                     sh '''
                         terraform init
-                        terraform plan  
-                        terraform apply -auto-approve
+                        terraform plan  -var-file="terraform.auto.tfvars"
+                        terraform apply -var-file="terraform.auto.tfvars" -auto-approve
                     '''
                 }
             }
