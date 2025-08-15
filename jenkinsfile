@@ -1,11 +1,6 @@
 pipeline {
     agent { label 'oci-agent' }
 
-    environment {
-        OCI_CONFIG_PATH = ''
-        OCI_KEY_PATH = ''
-    }
-
     stages {
         stage('Setup OCI Config') {
             steps {
@@ -13,13 +8,16 @@ pipeline {
                     file(credentialsId: 'oci-config', variable: 'OCI_CONFIG'),
                     file(credentialsId: 'oci-key', variable: 'OCI_KEY')
                 ]) {
-                    script {
-                        env.OCI_CONFIG_PATH = "${OCI_CONFIG}"
-                        env.OCI_KEY_PATH = "${OCI_KEY}"
-                    }
                     bat """
-                    echo OCI Config temporary path: %OCI_CONFIG_PATH%
-                    echo OCI Key temporary path: %OCI_KEY_PATH%
+                        REM Create .oci folder if it doesn't exist
+                        if not exist "C:\\Users\\DELL\\.oci" mkdir "C:\\Users\\DELL\\.oci"
+
+                        REM Copy config and key from Jenkins credentials
+                        copy /Y "%OCI_CONFIG%" "C:\\Users\\DELL\\.oci\\config"
+                        copy /Y "%OCI_KEY%" "C:\\Users\\DELL\\.oci\\oci_api_key.pem"
+
+                        REM Set permissions on the private key
+                        icacls "C:\\Users\\DELL\\.oci\\oci_api_key.pem" /inheritance:r /grant:r "DELL:F"
                     """
                 }
             }
@@ -29,11 +27,14 @@ pipeline {
             steps {
                 dir('config_test2') {
                     bat """
-                    set OCI_CONFIG=%OCI_CONFIG_PATH%
-                    set OCI_KEY=%OCI_KEY_PATH%
-                    terraform init
-                    terraform plan -out=tfplan
-                    terraform apply -auto-approve
+                        REM Read public SSH key
+                        set PUB_KEY=
+                        for /F "usebackq delims=" %%i in ("C:\\Users\\DELL\\Downloads\\ayadifatma418@gmail.com-2025-07-10T13_34_58.521Z.pub") do set PUB_KEY=%%i
+
+                        REM Terraform commands
+                        terraform init
+                        terraform plan -out=tfplan -var "public_ssh_key=%PUB_KEY%"
+                        terraform apply -auto-approve -var "public_ssh_key=%PUB_KEY%"
                     """
                 }
             }
