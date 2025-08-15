@@ -42,7 +42,7 @@ pipeline {
                 dir('config_test2') {
                     sh '''
                         terraform init
-                        terraform plan  -auto-approve
+                        terraform plan  
                         terraform apply -auto-approve
                     '''
                 }
