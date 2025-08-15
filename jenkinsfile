@@ -3,22 +3,23 @@ pipeline {
 
     stages {
         stage('Setup OCI Config') {
-            steps {
-                withCredentials([
-                    file(credentialsId: 'oci-config', variable: 'OCI_CONFIG'),
-                    file(credentialsId: 'oci-key', variable: 'OCI_KEY')
-                ]) {
-                    bat """
-                        REM Create .oci folder in workspace
-                        if not exist "%WORKSPACE%\\.oci" mkdir "%WORKSPACE%\\.oci"
+    steps {
+        withCredentials([
+            file(credentialsId: 'oci-config', variable: 'OCI_CONFIG'),
+            file(credentialsId: 'oci-key', variable: 'OCI_KEY')
+        ]) {
+            bat """
+                REM Create .oci folder in workspace
+                if not exist "%WORKSPACE%\\.oci" mkdir "%WORKSPACE%\\.oci"
 
-                        REM Copy OCI config and private key into workspace
-                        copy /Y "%OCI_CONFIG%" "%WORKSPACE%\\.oci\\config"
-                        copy /Y "%OCI_KEY%" "%WORKSPACE%\\.oci\\oci_api_key.pem"
-                    """
-                }
-            }
+                REM Copy OCI config and private key into workspace
+                copy /Y "%OCI_CONFIG%" "%WORKSPACE%\\.oci\\config"
+                copy /Y "%OCI_KEY%" "%WORKSPACE%\\.oci\\oci_api_key.pem"
+            """
         }
+    }
+}
+
 
         stage('Terraform Apply') {
             steps {
