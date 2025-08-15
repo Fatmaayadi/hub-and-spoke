@@ -9,10 +9,10 @@ pipeline {
                     file(credentialsId: 'oci-key', variable: 'OCI_KEY')
                 ]) {
                     bat """
-                        REM Use workspace .oci folder
+                        REM Create .oci folder in workspace
                         if not exist "%WORKSPACE%\\.oci" mkdir "%WORKSPACE%\\.oci"
 
-                        REM Copy config and private key
+                        REM Copy OCI config and private key into workspace
                         copy /Y "%OCI_CONFIG%" "%WORKSPACE%\\.oci\\config"
                         copy /Y "%OCI_KEY%" "%WORKSPACE%\\.oci\\oci_api_key.pem"
                     """
@@ -24,7 +24,7 @@ pipeline {
             steps {
                 dir('config_test2') {
                     bat """
-                        REM Read the public key into a variable
+                        REM Read public key from local file
                         set /p PUB_KEY=<"C:\\Users\\DELL\\Downloads\\ayadifatma418@gmail.com-2025-07-10T13_34_58.521Z.pub"
 
                         terraform init
