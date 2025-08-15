@@ -5,7 +5,7 @@ locals {
   all_vcn_defined_tags = {}
   all_vcn_freeform_tags = {}
   valid_service_gateway_cidrs = [
-    "all-eu-paris-1-services-in-oracle-services-network"
+    "all-cdg-services-in-oracle-services-network"
   ]
    network_entity_ids = {
     for subnet_name, subnet in module.lz_vcn_spokes.subnets :
