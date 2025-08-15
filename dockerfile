@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip3 install --break-system-packages oci-cli
 
 # Install Terraform
-ARG TERRAFORM_VERSION=1.9.5
+ARG TERRAFORM_VERSION=1.2.9
 RUN curl -fsSL https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -o terraform.zip \
     && unzip terraform.zip \
     && mv terraform /usr/local/bin/ \
