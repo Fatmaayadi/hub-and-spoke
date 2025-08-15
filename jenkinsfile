@@ -11,9 +11,9 @@ pipeline {
             steps {
                 script {
                     echo "Creating workspace .oci folder if not exists"
-                    bat """
-                        if not exist "%WORKSPACE%\\.oci" mkdir "%WORKSPACE%\\.oci"
-                    """
+                    sh '''
+                        mkdir -p "$WORKSPACE/.oci"
+                    '''
                 }
             }
         }
@@ -22,10 +22,10 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'oci_config', variable: 'OCI_CONFIG_FILE'),
                                  file(credentialsId: 'oci_key', variable: 'OCI_KEY_FILE')]) {
-                    bat """
-                        copy /Y "%OCI_CONFIG_FILE%" "%WORKSPACE%\\.oci\\config"
-                        copy /Y "%OCI_KEY_FILE%" "%WORKSPACE%\\.oci\\oci_api_key.pem"
-                    """
+                    sh '''
+                        cp "$OCI_CONFIG_FILE" "$WORKSPACE/.oci/config"
+                        cp "$OCI_KEY_FILE" "$WORKSPACE/.oci/oci_api_key.pem"
+                    '''
                 }
             }
         }
@@ -33,8 +33,10 @@ pipeline {
         stage('Terraform Init & Apply') {
             steps {
                 dir('terraform-deploy') {
-                    bat 'terraform init'
-                    bat 'terraform apply -auto-approve'
+                    sh '''
+                        terraform init
+                        terraform apply -auto-approve
+                    '''
                 }
             }
         }
