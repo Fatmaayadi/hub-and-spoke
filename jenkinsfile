@@ -10,39 +10,37 @@ pipeline {
         stage('Prepare Workspace') {
             steps {
                 script {
-                    echo "Creating workspace .oci folder if not exists"
+                    echo "Creating /home/jenkins/.oci folder if not exists"
                     sh '''
-                         mkdir -p /home/jenkins/agent/workspace/terraform-deploy/.oci
-                        chmod 700 /home/jenkins/agent/workspace/terraform-deploy/.oci
+                        mkdir -p /home/jenkins/.oci
+                        chmod 700 /home/jenkins/.oci
                     '''
                 }
             }
         }
 
         stage('Copy OCI Config and Key') {
-    steps {
-        withCredentials([
-            file(credentialsId: 'oci_config', variable: 'OCI_CONFIG_FILE'),
-            file(credentialsId: 'oci_key', variable: 'OCI_KEY_FILE')
-        ]) {
-            sh '''
-                mkdir -p "$WORKSPACE/terraform-deploy/.oci"
-                cp "$OCI_CONFIG_FILE" "$WORKSPACE/terraform-deploy/.oci/config"
-                cp "$OCI_KEY_FILE" "$WORKSPACE/terraform-deploy/.oci/oci_api_key.pem"
-                chmod 600 "$WORKSPACE/terraform-deploy/.oci/config"
-                chmod 600 "$WORKSPACE/terraform-deploy/.oci/oci_api_key.pem"
-            '''
+            steps {
+                withCredentials([
+                    file(credentialsId: 'oci_config', variable: 'OCI_CONFIG_FILE'),
+                    file(credentialsId: 'oci_key', variable: 'OCI_KEY_FILE')
+                ]) {
+                    sh '''
+                        cp "$OCI_CONFIG_FILE" /home/jenkins/.oci/config
+                        cp "$OCI_KEY_FILE" /home/jenkins/.oci/oci_api_key.pem
+                        chmod 600 /home/jenkins/.oci/config
+                        chmod 600 /home/jenkins/.oci/oci_api_key.pem
+                    '''
+                }
+            }
         }
-    }
-}
-
 
         stage('Terraform Init & Apply') {
             steps {
                 dir('config_test2') {
                     sh '''
                         terraform init
-                        terraform plan  -var-file="terraform.auto.tfvars"
+                        terraform plan -var-file="terraform.auto.tfvars"
                         terraform apply -var-file="terraform.auto.tfvars" -auto-approve
                     '''
                 }
