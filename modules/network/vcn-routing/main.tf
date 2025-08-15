@@ -9,6 +9,12 @@ terraform {
   }
 }
 locals {
+  
+  subnet_route_table_attachments = {
+    for k, v in local.subnets_route_tables_split :
+    v.subnet_id => k
+  }
+
   subnets_route_tables_split = merge(
     {
       for name, cfg in var.subnets_route_tables :
@@ -70,8 +76,9 @@ resource "oci_core_route_table" "these" {
 
 ### Route Table Attachments
 resource "oci_core_route_table_attachment" "these" {
-  for_each       = var.subnets_route_tables
-  subnet_id      = each.value.subnet_id
-  route_table_id = oci_core_route_table.these[each.key].id
+  for_each = local.subnet_route_table_attachments
+
+  subnet_id      = each.key
+  route_table_id = oci_core_route_table.these[each.value].id
 }
 
