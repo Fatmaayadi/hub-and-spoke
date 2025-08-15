@@ -32,9 +32,10 @@ pipeline {
 
         stage('Terraform Init & Apply') {
             steps {
-                dir('terraform-deploy') {
+                dir('config_test2') {
                     sh '''
                         terraform init
+                        terraform plan  -auto-approve
                         terraform apply -auto-approve
                     '''
                 }
