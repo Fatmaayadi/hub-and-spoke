@@ -9,30 +9,37 @@ terraform {
   }
 }
 locals {
-  subnets_route_tables_clean = {
-    for name, cfg in var.subnets_route_tables : name => merge(cfg, {
-      has_sgw_all_services = anytrue([
-        for r in cfg.route_rules : try(r.destination, null) == "all-eu-paris-1-services-in-oracle-services-network"
-      ]),
-      has_igw = anytrue([
+  subnets_route_tables_split = merge(
+    {
+      for name, cfg in var.subnets_route_tables :
+      "${name}-igw" => merge(cfg, {
+        route_rules = [
+          for r in cfg.route_rules :
+          r if try(r.destination, null) == "0.0.0.0/0"
+        ]
+      })
+      if anytrue([
         for r in cfg.route_rules : try(r.destination, null) == "0.0.0.0/0"
-      ]),
-      route_rules = [
-        for r in cfg.route_rules :
-        r
-        if !(try(r.destination, null) == "all-eu-paris-1-services-in-oracle-services-network" && anytrue([
-          for x in cfg.route_rules : try(x.destination, null) == "0.0.0.0/0"
-        ]))
-        && !(try(r.destination, null) == "0.0.0.0/0" && anytrue([
-          for x in cfg.route_rules : try(x.destination, null) == "all-eu-paris-1-services-in-oracle-services-network"
-        ]))
-      ]
-    })
-  }
+      ])
+    },
+    {
+      for name, cfg in var.subnets_route_tables :
+      "${name}-sgw" => merge(cfg, {
+        route_rules = [
+          for r in cfg.route_rules :
+          r if try(r.destination, null) == "all-eu-paris-1-services-in-oracle-services-network"
+        ]
+      })
+      if anytrue([
+        for r in cfg.route_rules : try(r.destination, null) == "all-eu-paris-1-services-in-oracle-services-network"
+      ])
+    }
+  )
 }
 
+
 resource "oci_core_route_table" "these" {
-  for_each       = local.subnets_route_tables_clean
+  for_each       = local.subnets_route_tables_split
   display_name   = each.key
   vcn_id         = each.value.vcn_id
   compartment_id = each.value.compartment_id
@@ -60,6 +67,7 @@ resource "oci_core_route_table" "these" {
     }
   }
 }
+
 ### Route Table Attachments
 resource "oci_core_route_table_attachment" "these" {
   for_each       = var.subnets_route_tables
