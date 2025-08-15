@@ -1,6 +1,11 @@
 pipeline {
     agent { label 'oci-agent' }
 
+    environment {
+        OCI_CONFIG_PATH = ''
+        OCI_KEY_PATH = ''
+    }
+
     stages {
         stage('Setup OCI Config') {
             steps {
@@ -8,16 +13,13 @@ pipeline {
                     file(credentialsId: 'oci-config', variable: 'OCI_CONFIG'),
                     file(credentialsId: 'oci-key', variable: 'OCI_KEY')
                 ]) {
+                    script {
+                        env.OCI_CONFIG_PATH = "${OCI_CONFIG}"
+                        env.OCI_KEY_PATH = "${OCI_KEY}"
+                    }
                     bat """
-                    REM Create .oci folder if it doesn't exist
-                    if not exist "%USERPROFILE%\\.oci" mkdir "%USERPROFILE%\\.oci"
-
-                    REM Copy config and key from Jenkins credentials
-                    copy /Y "%OCI_CONFIG%" "%USERPROFILE%\\.oci\\config"
-                    copy /Y "%OCI_KEY%" "%USERPROFILE%\\.oci\\oci_api_key.pem"
-
-                    REM Set permissions on the private key
-                    icacls "%USERPROFILE%\\.oci\\oci_api_key.pem" /inheritance:r /grant:r "%USERNAME%:F"
+                    echo OCI Config temporary path: %OCI_CONFIG_PATH%
+                    echo OCI Key temporary path: %OCI_KEY_PATH%
                     """
                 }
             }
@@ -25,8 +27,10 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                dir('config_test2') { // your Terraform folder
+                dir('config_test2') {
                     bat """
+                    set OCI_CONFIG=%OCI_CONFIG_PATH%
+                    set OCI_KEY=%OCI_KEY_PATH%
                     terraform init
                     terraform plan -out=tfplan
                     terraform apply -auto-approve
