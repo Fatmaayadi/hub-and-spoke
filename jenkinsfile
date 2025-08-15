@@ -58,10 +58,15 @@ pipeline {
                 }
             }
         }
-        stage('Approve Destroy') {
+        stage('Terraform Destroy') {
             steps {
-                input message: 'Do you want to destroy all OCI resources?', ok: 'Yes, destroy'
+                script {
+                    input message: 'Do you want to destroy all OCI resources?', ok: 'Yes, destroy'
+                }
+                dir('config_test2') {
+                    sh 'terraform destroy -var-file="terraform.auto.tfvars" -auto-approve'
+                }
             }
-        }
+        }   
     }
 }
