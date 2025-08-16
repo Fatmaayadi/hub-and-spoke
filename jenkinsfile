@@ -58,6 +58,7 @@ pipeline {
                 }
             }
         }
+
         stage('Terraform Destroy') {
             steps {
                 script {
@@ -67,6 +68,19 @@ pipeline {
                     sh 'terraform destroy -var-file="terraform.auto.tfvars" -auto-approve'
                 }
             }
-        }   
+        }
+    }
+
+    post {
+        success {
+            mail to: 'ayadifatma418@gmail.com',
+                 subject: "✅ Succès du job Jenkins: ${env.JOB_NAME}",
+                 body: "Le job '${env.JOB_NAME}' s'est terminé avec succès.\nLien: ${env.BUILD_URL}"
+        }
+        failure {
+            mail to: 'ayadifatma418@gmail.com',
+                 subject: "❌ Échec du job Jenkins: ${env.JOB_NAME}",
+                 body: "Le job '${env.JOB_NAME}' a échoué.\nVérifie les logs: ${env.BUILD_URL}"
+        }
     }
 }
