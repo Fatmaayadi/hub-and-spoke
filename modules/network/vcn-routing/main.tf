@@ -7,12 +7,12 @@ terraform {
 }
 
 locals {
-  # Génère des tables IGW et SGW avec des clés statiques
-  subnets_route_tables_split = merge(
+  # Création de tables IGW et SGW avec des clés statiques
+  route_table_definitions = merge(
     {
       for name, cfg in var.subnets_route_tables :
       "${name}-igw" => {
-        name           = "${name}-igw"
+        display_name   = "${name}-igw"
         vcn_id         = cfg.vcn_id
         compartment_id = cfg.compartment_id
         defined_tags   = cfg.defined_tags
@@ -24,7 +24,7 @@ locals {
     {
       for name, cfg in var.subnets_route_tables :
       "${name}-sgw" => {
-        name           = "${name}-sgw"
+        display_name   = "${name}-sgw"
         vcn_id         = cfg.vcn_id
         compartment_id = cfg.compartment_id
         defined_tags   = cfg.defined_tags
@@ -37,8 +37,8 @@ locals {
 }
 
 resource "oci_core_route_table" "these" {
-  for_each       = local.subnets_route_tables_split
-  display_name   = each.value.name
+  for_each       = local.route_table_definitions
+  display_name   = each.value.display_name
   vcn_id         = each.value.vcn_id
   compartment_id = each.value.compartment_id
   defined_tags   = each.value.defined_tags
