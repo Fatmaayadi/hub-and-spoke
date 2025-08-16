@@ -60,26 +60,30 @@ pipeline {
         }
 
         stage('Terraform Destroy') {
-            steps {
-                script {
-                    def destroyConfirmed = false
+    steps {
+        script {
+            def destroyConfirmed = false
 
-                    catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
-                        input message: 'Do you want to destroy all OCI resources?', ok: 'Yes, destroy'
-                        destroyConfirmed = true
-                    }
+            try {
+                input message: 'Do you want to destroy all OCI resources?', ok: 'Yes, destroy'
+                destroyConfirmed = true
+            } catch (err) {
+                echo "Destroy skipped by user: ${err}"
+                destroyConfirmed = false
+                currentBuild.result = 'SUCCESS' // ✅ Prevent ABORTED status
+            }
 
-                    if (destroyConfirmed) {
-                        dir('config_test2') {
-                            sh 'terraform destroy -var-file="terraform.auto.tfvars" -auto-approve'
-                        }
-                    } else {
-                        echo 'Destroy skipped by user.'
-                        currentBuild.result = 'SUCCESS' // ✅ Prevent ABORTED status
-                    }
+            if (destroyConfirmed) {
+                dir('config_test2') {
+                    sh 'terraform destroy -var-file="terraform.auto.tfvars" -auto-approve'
                 }
+            } else {
+                echo 'Destroy skipped by user.'
             }
         }
+    }
+}
+
     }
 
     post {
