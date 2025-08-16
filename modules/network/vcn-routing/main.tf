@@ -7,20 +7,45 @@ terraform {
 }
 
 locals {
-  # Create a static map of all route tables from input
-  all_route_tables = {
+  # Split route tables into IGW and SGW
+  igw_route_tables = {
     for name, cfg in var.subnets_route_tables :
-    name => {
+    "${name}-igw" => {
       subnet_id      = cfg.subnet_id
       vcn_id         = cfg.vcn_id
       compartment_id = cfg.compartment_id
       defined_tags   = cfg.defined_tags
       freeform_tags  = cfg.freeform_tags
-      route_rules    = cfg.route_rules
+      route_rules = [
+        for r in cfg.route_rules :
+        r if try(r.destination, null) == "0.0.0.0/0"
+      ]
     }
+    if anytrue([
+      for r in cfg.route_rules : try(r.destination, null) == "0.0.0.0/0"
+    ])
   }
 
-  # Attach each subnet to its corresponding route table
+  sgw_route_tables = {
+    for name, cfg in var.subnets_route_tables :
+    "${name}-sgw" => {
+      subnet_id      = cfg.subnet_id
+      vcn_id         = cfg.vcn_id
+      compartment_id = cfg.compartment_id
+      defined_tags   = cfg.defined_tags
+      freeform_tags  = cfg.freeform_tags
+      route_rules = [
+        for r in cfg.route_rules :
+        r if try(r.destination, null) == "all-eu-paris-1-services-in-oracle-services-network"
+      ]
+    }
+    if anytrue([
+      for r in cfg.route_rules : try(r.destination, null) == "all-eu-paris-1-services-in-oracle-services-network"
+    ])
+  }
+
+  all_route_tables = merge(local.igw_route_tables, local.sgw_route_tables)
+
   subnet_route_table_attachments = {
     for name, cfg in local.all_route_tables :
     cfg.subnet_id => name
