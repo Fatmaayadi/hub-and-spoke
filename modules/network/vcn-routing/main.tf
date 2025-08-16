@@ -8,44 +8,12 @@ terraform {
     }
   }
 }
-locals {
-  
-  subnet_route_table_attachments = {
-    for k, v in local.subnets_route_tables_split :
-    v.subnet_id => k
-  }
 
-  subnets_route_tables_split = merge(
-    {
-      for name, cfg in var.subnets_route_tables :
-      "${name}-igw" => merge(cfg, {
-        route_rules = [
-          for r in cfg.route_rules :
-          r if try(r.destination, null) == "0.0.0.0/0"
-        ]
-      })
-      if anytrue([
-        for r in cfg.route_rules : try(r.destination, null) == "0.0.0.0/0"
-      ])
-    },
-    {
-      for name, cfg in var.subnets_route_tables :
-      "${name}-sgw" => merge(cfg, {
-        route_rules = [
-          for r in cfg.route_rules :
-          r if try(r.destination, null) == "all-eu-paris-1-services-in-oracle-services-network"
-        ]
-      })
-      if anytrue([
-        for r in cfg.route_rules : try(r.destination, null) == "all-eu-paris-1-services-in-oracle-services-network"
-      ])
-    }
-  )
-}
-
+# No dynamic locals needed for for_each
+# We will use var.subnets_route_tables directly
 
 resource "oci_core_route_table" "these" {
-  for_each = var.subnets_route_tables
+  for_each       = var.subnets_route_tables
 
   display_name   = each.key
   vcn_id         = each.value.vcn_id
@@ -75,11 +43,9 @@ resource "oci_core_route_table" "these" {
   }
 }
 
-
-### Route Table Attachments
 resource "oci_core_route_table_attachment" "these" {
-  for_each = local.subnet_route_table_attachments
+  for_each = var.subnets_route_tables
 
-  subnet_id      = each.key
-  route_table_id = oci_core_route_table.these[each.value].id
+  subnet_id      = each.value.subnet_id
+  route_table_id = oci_core_route_table.these[each.key].id
 }
