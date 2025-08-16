@@ -1,3 +1,6 @@
+# Copyright (c) 2021 Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+
 terraform {
   required_providers {
     oci = {
@@ -5,40 +8,45 @@ terraform {
     }
   }
 }
-
 locals {
-  # Création de tables IGW et SGW avec des clés statiques
-  route_table_definitions = merge(
+  
+  subnet_route_table_attachments = {
+    for k, v in local.subnets_route_tables_split :
+    v.subnet_id => k
+  }
+
+  subnets_route_tables_split = merge(
     {
       for name, cfg in var.subnets_route_tables :
-      "${name}-igw" => {
-        display_name   = "${name}-igw"
-        vcn_id         = cfg.vcn_id
-        compartment_id = cfg.compartment_id
-        defined_tags   = cfg.defined_tags
-        freeform_tags  = cfg.freeform_tags
-        route_rules    = [for r in cfg.route_rules : r if try(r.destination, null) == "0.0.0.0/0"]
-      }
-      if anytrue([for r in cfg.route_rules : try(r.destination, null) == "0.0.0.0/0"])
+      "${name}-igw" => merge(cfg, {
+        route_rules = [
+          for r in cfg.route_rules :
+          r if try(r.destination, null) == "0.0.0.0/0"
+        ]
+      })
+      if anytrue([
+        for r in cfg.route_rules : try(r.destination, null) == "0.0.0.0/0"
+      ])
     },
     {
       for name, cfg in var.subnets_route_tables :
-      "${name}-sgw" => {
-        display_name   = "${name}-sgw"
-        vcn_id         = cfg.vcn_id
-        compartment_id = cfg.compartment_id
-        defined_tags   = cfg.defined_tags
-        freeform_tags  = cfg.freeform_tags
-        route_rules    = [for r in cfg.route_rules : r if try(r.destination, null) == "all-eu-paris-1-services-in-oracle-services-network"]
-      }
-      if anytrue([for r in cfg.route_rules : try(r.destination, null) == "all-eu-paris-1-services-in-oracle-services-network"])
+      "${name}-sgw" => merge(cfg, {
+        route_rules = [
+          for r in cfg.route_rules :
+          r if try(r.destination, null) == "all-eu-paris-1-services-in-oracle-services-network"
+        ]
+      })
+      if anytrue([
+        for r in cfg.route_rules : try(r.destination, null) == "all-eu-paris-1-services-in-oracle-services-network"
+      ])
     }
   )
 }
 
+
 resource "oci_core_route_table" "these" {
-  for_each       = local.route_table_definitions
-  display_name   = each.value.display_name
+  for_each       = local.subnets_route_tables_split
+  display_name   = each.key
   vcn_id         = each.value.vcn_id
   compartment_id = each.value.compartment_id
   defined_tags   = each.value.defined_tags
@@ -46,13 +54,30 @@ resource "oci_core_route_table" "these" {
 
   dynamic "route_rules" {
     iterator = rule
-    for_each = each.value.route_rules
+
+    for_each = [
+      for r in each.value.route_rules : {
+        dst               = try(r.destination, null)
+        dst_type          = try(r.destination_type, null)
+        network_entity_id = try(r.network_entity_id, null)
+        description       = try(r.description, null)
+      }
+      if try(r.is_create, false) && try(r.network_entity_id, null) != null
+    ]
 
     content {
-      destination        = rule.destination
-      destination_type   = rule.destination_type
-      network_entity_id  = rule.network_entity_id
-      description        = rule.description
+      destination        = rule.value.dst
+      destination_type   = rule.value.dst_type
+      network_entity_id  = rule.value.network_entity_id
+      description        = rule.value.description
     }
   }
+}
+
+### Route Table Attachments
+resource "oci_core_route_table_attachment" "these" {
+  for_each = local.subnet_route_table_attachments
+
+  subnet_id      = each.key
+  route_table_id = oci_core_route_table.these[each.value].id
 }

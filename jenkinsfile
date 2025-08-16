@@ -54,10 +54,14 @@ pipeline {
         stage('Terraform Apply') {
             steps {
                 dir('config_test2') {
+                    sh 'terraform plan -target=module.lz_vcn_dmz -target=module.lz_vcn_spokes -target=module.lz_drg'
+                    sh 'terraform apply -target=module.lz_vcn_dmz -target=module.lz_vcn_spokes -target=module.lz_drg -auto-approve'
+                    sh 'terraform plan -var-file="terraform.auto.tfvars"'
                     sh 'terraform apply -var-file="terraform.auto.tfvars" -auto-approve'
                 }
             }
         }
+
 
         stage('Terraform Destroy') {
             steps {
