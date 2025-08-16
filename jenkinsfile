@@ -75,6 +75,7 @@ pipeline {
 
             if (destroyConfirmed) {
                 dir('config_test2') {
+                    sh 'terraform destroy -target=oci_core_route_table_attachment.these -var-file="terraform.auto.tfvars" -auto-approve'
                     sh 'terraform destroy -var-file="terraform.auto.tfvars" -auto-approve'
                 }
             } else {
